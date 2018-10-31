@@ -1,5 +1,7 @@
 package ru.yusdm.training.springboottest.passport.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import ru.yusdm.training.springboottest.user.domain.User;
 
@@ -19,6 +21,10 @@ public class Passport {
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
+    /**
+     * If we don't use dto and sent domain to avoid recursion
+     */
+    @JsonBackReference
     private User user;
 
     @Column(name = "SERIAL_NUMBER")

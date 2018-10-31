@@ -55,6 +55,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User saveUpdate(User user) {
+        return userJpaSpringDataRepo.save(user);
+    }
+
+    @Override
+    public void delete(long id) {
+        userJpaSpringDataRepo.deleteById(id);
+    }
+
+    @Override
     public String getValidToken() {
         return validToken;
     }

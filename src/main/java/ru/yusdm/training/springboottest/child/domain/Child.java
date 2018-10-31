@@ -1,5 +1,7 @@
 package ru.yusdm.training.springboottest.child.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import ru.yusdm.training.springboottest.user.domain.User;
 
@@ -20,6 +22,10 @@ public class Child {
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
+    /**
+     * If we don't use dto and sent domain to avoid recursion
+     */
+    @JsonBackReference
     private User user;
 
     @Column(name = "NAME")

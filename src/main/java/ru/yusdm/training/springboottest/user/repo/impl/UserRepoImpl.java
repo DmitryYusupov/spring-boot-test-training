@@ -22,7 +22,7 @@ public class UserRepoImpl implements UserRepo {
 
     @Override
     public List<User> findAll() {
-        TypedQuery<User> query = em.createNamedQuery("FROM User", User.class);
+        TypedQuery<User> query = em.createQuery("FROM User", User.class);
         return query.getResultList();
     }
 
