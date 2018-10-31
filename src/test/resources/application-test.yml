@@ -1,0 +1,8 @@
+logging:
+  level:
+    org.springframework.test: INFO
+connection:
+  url: oraConnectionTest
+
+auth:
+  validToken: validTokenTest

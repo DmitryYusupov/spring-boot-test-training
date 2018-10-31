@@ -1,0 +1,5 @@
+connection:
+  url: oraConnectionProd
+
+auth:
+  validToken: validTokenProd
