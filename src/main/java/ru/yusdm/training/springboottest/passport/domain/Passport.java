@@ -1,14 +1,26 @@
 package ru.yusdm.training.springboottest.passport.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import ru.yusdm.training.springboottest.user.domain.User;
 
-@Data
+import javax.persistence.*;
+
+@Getter
+@Setter
 @AllArgsConstructor
-@EqualsAndHashCode
+@NoArgsConstructor
+@Entity
+@Table(name = "PASSPORT")
 public class Passport {
+
+    @Id
+    @Column(name = "ID")
     private Long id;
-    private Long userId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    private User user;
+
+    @Column(name = "SERIAL_NUMBER")
     private String serialNumber;
 }

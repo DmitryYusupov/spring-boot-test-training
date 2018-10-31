@@ -2,8 +2,12 @@ package ru.yusdm.training.springboottest.user.service.impl.plainoldtest;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import ru.yusdm.training.springboottest.passport.repo.PassportRepo;
+import ru.yusdm.training.springboottest.child.repo.ChildJpaSpringDataRepo;
+import ru.yusdm.training.springboottest.otherservices.NotUsedServiceA;
+import ru.yusdm.training.springboottest.otherservices.NotUsedServiceB;
+import ru.yusdm.training.springboottest.user.repo.UserJpaSpringDataRepo;
 import ru.yusdm.training.springboottest.user.repo.UserRepo;
+import ru.yusdm.training.springboottest.user.service.UserService;
 import ru.yusdm.training.springboottest.user.service.impl.UserServiceImpl;
 
 import javax.annotation.PostConstruct;
@@ -32,8 +36,13 @@ import javax.annotation.PostConstruct;
 public class UserServiceImplPlainOldTestConfig {
 
     @Bean
-    public UserServiceImpl userServiceBean(UserRepo userRepo, PassportRepo passportRepo) {
-        return new UserServiceImpl(userRepo, passportRepo);
+    public UserService userServiceBean(UserRepo userRepo,
+                                       UserJpaSpringDataRepo userJpaSpringDataRepo,
+                                       ChildJpaSpringDataRepo childJpaSpringDataRepo,
+                                       NotUsedServiceA notUsedServiceA,
+                                       NotUsedServiceB notUsedServiceB) {
+        return new UserServiceImpl(userRepo, userJpaSpringDataRepo, childJpaSpringDataRepo,
+                notUsedServiceA, notUsedServiceB);
     }
 
     @PostConstruct
