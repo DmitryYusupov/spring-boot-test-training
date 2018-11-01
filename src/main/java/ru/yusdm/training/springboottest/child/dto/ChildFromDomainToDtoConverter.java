@@ -1,14 +1,15 @@
 package ru.yusdm.training.springboottest.child.dto;
 
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.yusdm.training.springboottest.child.domain.Child;
 import ru.yusdm.training.springboottest.common.solutions.Converter;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ChildFromDomainToDtoConverter implements Converter<Child, ChildDto> {
+import javax.annotation.PostConstruct;
 
-    public static final ChildFromDomainToDtoConverter INSTANCE = new ChildFromDomainToDtoConverter();
+@NoArgsConstructor
+@Component
+public class ChildFromDomainToDtoConverter implements Converter<Child, ChildDto> {
 
     @Override
     public ChildDto convert(Child child) {

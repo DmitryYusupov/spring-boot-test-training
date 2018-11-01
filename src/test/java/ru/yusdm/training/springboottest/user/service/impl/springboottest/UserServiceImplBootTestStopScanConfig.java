@@ -7,7 +7,7 @@ import javax.annotation.PostConstruct;
 /**
  * We stop scan components in upp direction
  */
-//@SpringBootConfiguration
+@SpringBootConfiguration
 public class UserServiceImplBootTestStopScanConfig {
 
     @PostConstruct

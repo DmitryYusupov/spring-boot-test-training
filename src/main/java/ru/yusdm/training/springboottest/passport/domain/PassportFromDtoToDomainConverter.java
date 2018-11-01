@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yusdm.training.springboottest.common.solutions.Converter;
 import ru.yusdm.training.springboottest.passport.dto.PassportDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 @Component
 public class PassportFromDtoToDomainConverter implements Converter<PassportDto, Passport> {
 

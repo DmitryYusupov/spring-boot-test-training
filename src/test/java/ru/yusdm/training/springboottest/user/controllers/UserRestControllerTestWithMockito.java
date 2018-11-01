@@ -11,8 +11,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.yusdm.training.springboottest.BaseTest;
 import ru.yusdm.training.springboottest.child.domain.Child;
+import ru.yusdm.training.springboottest.child.domain.ChildFromDtoToDomainConverter;
+import ru.yusdm.training.springboottest.child.dto.ChildDto;
+import ru.yusdm.training.springboottest.child.dto.ChildFromDomainToDtoConverter;
 import ru.yusdm.training.springboottest.passport.domain.Passport;
+import ru.yusdm.training.springboottest.passport.domain.PassportFromDtoToDomainConverter;
 import ru.yusdm.training.springboottest.passport.dto.PassportDto;
+import ru.yusdm.training.springboottest.passport.dto.PassportFromDomainToDtoConverter;
 import ru.yusdm.training.springboottest.user.domain.User;
 import ru.yusdm.training.springboottest.user.domain.UserFromDtoToDomainConverter;
 import ru.yusdm.training.springboottest.user.dto.UserDto;
@@ -22,6 +27,7 @@ import ru.yusdm.training.springboottest.user.service.UserService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -43,6 +49,9 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     private UserService userService;
 
     @MockBean
+    private ChildFromDomainToDtoConverter childFromDomainToDtoConverter;
+
+    @MockBean
     private UserFromDomainToDtoConverter userFromDomainToDtoConverter;
 
     @MockBean
@@ -55,9 +64,10 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     public void findAll() throws Exception {
 
         User user1 = createDomainUserWithPassport(1L);
-        appendChildrenToUser(user1, 2);
+        appendChildrenToDomainUser(user1, 2);
+
         User user2 = createDomainUserWithPassport(2L);
-        appendChildrenToUser(user2, 3);
+        appendChildrenToDomainUser(user2, 3);
         List<User> users = Arrays.asList(user1, user2);
 
         String expected = "[\n" +
@@ -109,11 +119,17 @@ public class UserRestControllerTestWithMockito extends BaseTest {
                 "]";
 
         when(userService.findAll()).thenReturn(users);
+        when(userFromDomainToDtoConverter.convert(user1)).thenReturn(getUserFromDomainToDtoConverter().convert(user1));
+        when(userFromDomainToDtoConverter.convert(user2)).thenReturn(getUserFromDomainToDtoConverter().convert(user2));
         this.mockMvc.perform(get(PATH + "/all"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
 
         verify(userService, times(1)).findAll();
+    }
+
+    private UserFromDomainToDtoConverter getUserFromDomainToDtoConverter(){
+        return new UserFromDomainToDtoConverter(new ChildFromDomainToDtoConverter(), new PassportFromDomainToDtoConverter());
     }
 
     @Test
@@ -130,7 +146,7 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     public void findByIdWithChildren() throws Exception {
         long id = 1L;
         User user = createDomainUserWithPassport(id);
-        appendChildrenToUser(user, 2);
+        appendChildrenToDomainUser(user, 2);
 
         when(userService.findById(id)).thenReturn(Optional.of(user));
         String expected =
@@ -176,7 +192,7 @@ public class UserRestControllerTestWithMockito extends BaseTest {
         return user;
     }
 
-    private void appendChildrenToUser(User user, int childrenNumber) {
+    private void appendChildrenToDomainUser(User user, int childrenNumber) {
         List<Child> children = LongStream.rangeClosed(1, childrenNumber).mapToObj(i -> {
             Child child = new Child();
             child.setName("Child_" + i);
@@ -188,26 +204,75 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     }
 
     @Test
-    public void saveWithChildren() {
-    }
+    public void saveWithChildren() throws Exception {
+        UserDto userDto = createUserDtoWithPassport(null);
+        appendChildrenToDtoUser(userDto, 3);
 
-    @Test
-    public void saveWithoutChildren() throws Exception {
-
-        UserDto userDto = createUserDtoWithPassport(1L);
+        //we rely on library - don't do it. Provide string! (Lazy to write for me)
         ObjectMapper mapper = new ObjectMapper();
         String dtoStr = mapper.writeValueAsString(userDto);
 
+        User userDomain = getUserFromDtoToDomainConverter().convert(userDto);
+        when(userFromDtoToDomainConverter.convert(any(UserDto.class))).thenReturn(userDomain);
+        when(userService.saveUpdate(userDomain)).thenReturn(
+                ((Supplier<User>) () -> {
+                    userDomain.setId(1L);
+                    return userDomain;
+                }
+                ).get());
+        when(userFromDomainToDtoConverter.convert(any(User.class))).thenReturn(userDto);
 
+        String expected =
+                "{" +
+                "\"id\":null,\"name\":\"userName\"," +
 
-        /*when(userFromDtoToDomainConverter.convert(Mockito.any(UserDto.class)))
-                .thenReturn()
-          */
+                "\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"}," +
+
+                "\"children\":" +
+                "[" +
+                "{\"id\":null,\"userId\":null,\"name\":\"ChildName_1\"}," +
+                "{\"id\":null,\"userId\":null,\"name\":\"ChildName_2\"}," +
+                "{\"id\":null,\"userId\":null,\"name\":\"ChildName_3\"}" +
+                "]" +
+
+                "}";
         this.mockMvc.perform(post(PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dtoStr))
                 .andExpect(status().isOk())
-        .andExpect(content().json(""));
+                .andExpect(content().json(expected));
+
+    }
+
+    @Test
+    public void saveWithoutChildren() throws Exception {
+        UserDto userDto = createUserDtoWithPassport(null);
+      //  String dtoStr = "{\"id\":null,\"name\":\"userName\",\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"},\"children\":null}";
+        ObjectMapper mapper = new ObjectMapper();
+        String dtoStr = mapper.writeValueAsString(userDto);
+
+        User userDomain = getUserFromDtoToDomainConverter().convert(userDto);
+        when(userFromDtoToDomainConverter.convert(any(UserDto.class))).thenReturn(userDomain);
+        when(userService.saveUpdate(userDomain)).thenReturn(
+                ((Supplier<User>) () -> {
+                    userDomain.setId(1L);
+                    return userDomain;
+                }
+                ).get());
+        when(userFromDomainToDtoConverter.convert(any(User.class))).thenReturn(getUserFromDomainToDtoConverter().convert(userDomain));
+
+        String expected = "{\"id\":1,\"name\":\"userName\",\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"},\"children\":null}";
+        this.mockMvc.perform(post(PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(dtoStr))
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
+    }
+
+    private UserFromDtoToDomainConverter getUserFromDtoToDomainConverter() {
+        return new UserFromDtoToDomainConverter(
+                new PassportFromDtoToDomainConverter(), new ChildFromDtoToDomainConverter()
+        );
     }
 
     private UserDto createUserDtoWithPassport(Long id) {
@@ -216,6 +281,13 @@ public class UserRestControllerTestWithMockito extends BaseTest {
         userDto.setName("userName");
         userDto.setPassportDto(new PassportDto(null, "serialNumber"));
         return userDto;
+    }
+
+    private void appendChildrenToDtoUser(UserDto user, int childrenNumber) {
+        List<ChildDto> children = LongStream.rangeClosed(1, childrenNumber)
+                .mapToObj(i -> new ChildDto(null, user.getId(), "ChildName_" + i))
+                .collect(toList());
+        user.setChildren(children);
     }
 
     @Test
