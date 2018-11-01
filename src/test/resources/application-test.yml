@@ -1,6 +1,7 @@
 logging:
   level:
-    org.springframework.test: INFO
+    org.springframework.web: DEBUG
+
 connection:
   url: oraConnectionTest
 

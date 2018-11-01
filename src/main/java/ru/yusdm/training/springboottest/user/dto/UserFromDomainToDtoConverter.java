@@ -2,6 +2,7 @@ package ru.yusdm.training.springboottest.user.dto;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.yusdm.training.springboottest.child.dto.ChildDto;
 import ru.yusdm.training.springboottest.child.dto.ChildFromDomainToDtoConverter;
 import ru.yusdm.training.springboottest.common.solutions.Converter;
@@ -14,9 +15,8 @@ import static java.util.stream.Collectors.toList;
 
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class UserFromDomainToDtoConverter implements Converter<User, UserDto> {
-
-    public static final UserFromDomainToDtoConverter INSTANCE = new UserFromDomainToDtoConverter();
 
     @Override
     public UserDto convert(User user) {

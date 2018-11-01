@@ -2,13 +2,13 @@ package ru.yusdm.training.springboottest.passport.domain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.yusdm.training.springboottest.common.solutions.Converter;
 import ru.yusdm.training.springboottest.passport.dto.PassportDto;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class PassportFromDtoToDomainConverter implements Converter<PassportDto, Passport> {
-
-    public static final PassportFromDtoToDomainConverter INSTANCE = new PassportFromDtoToDomainConverter();
 
     @Override
     public Passport convert(PassportDto passportDto) {
