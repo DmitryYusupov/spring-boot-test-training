@@ -18,7 +18,6 @@ import ru.yusdm.training.springboottest.user.repo.UserRepo;
 import ru.yusdm.training.springboottest.user.service.UserService;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -28,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
 
 @ContextConfiguration(classes = {UserServiceImplPlainOldTestConfig.class})
 @MockBean(value = {NotUsedServiceA.class, NotUsedServiceB.class})
@@ -57,9 +57,9 @@ public class UserServiceImplPlainOldTest extends BaseTest {
         when(childJpaSpringDataRepo.findByUser_Id(userSearchId)).thenReturn(expected.getChildren());
 
 
-        User fact = userService.findById(userSearchId).orElse(EMPTY_USER);
+        User actual = userService.findById(userSearchId).orElse(EMPTY_USER);
         verify(childJpaSpringDataRepo, Mockito.times(1)).findByUser_Id(userSearchId);
-        assertEquals(expected, fact);
+        assertReflectionEquals(expected, actual);
     }
 
     @Test
@@ -67,11 +67,11 @@ public class UserServiceImplPlainOldTest extends BaseTest {
         User expected = createUserWithoutChildren();
 
         long userSearchId = 1L;
-        when(userJpaSpringDataRepo.findById(userSearchId)).thenReturn(Optional.of(createUserWithoutChildren()));
-        when(childJpaSpringDataRepo.findByUser_Id(userSearchId)).thenReturn(Collections.EMPTY_LIST);
+        when(userJpaSpringDataRepo.findById(userSearchId)).thenReturn(Optional.of(expected));
+        when(childJpaSpringDataRepo.findByUser_Id(userSearchId)).thenReturn(null);
 
-        User fact = userService.findById(userSearchId).orElse(EMPTY_USER);
-        assertEquals(expected, fact);
+        User actual = userService.findById(userSearchId).orElse(EMPTY_USER);
+        assertReflectionEquals(expected, actual);
     }
 
     @Test
@@ -81,9 +81,9 @@ public class UserServiceImplPlainOldTest extends BaseTest {
         long userSearchId = 1L;
         when(userJpaSpringDataRepo.findById(userSearchId)).thenReturn(Optional.empty());
 
-        Optional<User> fact = userService.findById(userSearchId);
+        Optional<User> actual = userService.findById(userSearchId);
         verify(childJpaSpringDataRepo, Mockito.times(0)).findByUser_Id(userSearchId);
-        assertEquals(expected, fact);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -94,8 +94,8 @@ public class UserServiceImplPlainOldTest extends BaseTest {
         List<User> expected = Arrays.asList(userWithoutChildren, userWithChildren);
 
         when(userRepo.findAll()).thenReturn(expected);
-        List<User> fact = userService.findAll();
-        assertEquals(expected, fact);
+        List<User> actual = userService.findAll();
+        assertEquals(expected, actual);
     }
 
 
@@ -118,12 +118,12 @@ public class UserServiceImplPlainOldTest extends BaseTest {
 
     @Test
     public void testGetValidToken() {
-        String factValidToken = userService.getValidToken();
-        System.out.println("Token in PlainOld test '" + factValidToken + "'");
+        String actualValidToken = userService.getValidToken();
+        System.out.println("Token in PlainOld test '" + actualValidToken + "'");
         System.out.println("Token hasn't taken from 'application-test.yml'!");
 
-        assertTrue(!factValidToken.isEmpty());
-        assertEquals("${auth.validToken}", factValidToken);
+        assertTrue(!actualValidToken.isEmpty());
+        assertEquals("${auth.validToken}", actualValidToken);
     }
 
 }
