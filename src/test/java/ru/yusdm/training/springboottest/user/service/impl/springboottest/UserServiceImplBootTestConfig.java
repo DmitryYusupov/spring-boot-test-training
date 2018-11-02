@@ -38,10 +38,10 @@ public class UserServiceImplBootTestConfig {
 
     @Bean
     public UserService userServiceBean(UserRepo userRepo,
-                                           UserJpaSpringDataRepo userJpaSpringDataRepo,
-                                           ChildJpaSpringDataRepo childJpaSpringDataRepo,
-                                           NotUsedServiceA notUsedServiceA,
-                                           NotUsedServiceB notUsedServiceB) {
+                                       UserJpaSpringDataRepo userJpaSpringDataRepo,
+                                       ChildJpaSpringDataRepo childJpaSpringDataRepo,
+                                       NotUsedServiceA notUsedServiceA,
+                                       NotUsedServiceB notUsedServiceB) {
         UserService userService = new UserServiceImpl(userRepo, userJpaSpringDataRepo, childJpaSpringDataRepo,
                 notUsedServiceA, notUsedServiceB);
         System.out.println("In test config " + userService.hashCode());

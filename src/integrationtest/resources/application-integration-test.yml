@@ -1,0 +1,9 @@
+logging:
+  level:
+    org.springframework.web: DEBUG
+
+connection:
+  url: oraConnectionIntegrationTest
+
+auth:
+  validToken: validTokenIntegrationTest

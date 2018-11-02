@@ -23,15 +23,48 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integrationtest/java')
+        resources.srcDir file('src/integrationtest/resources')
+    }
+}
+
+task integrationTest(type: Test) {
+    //define path to integration classes
+    testClassesDirs = sourceSets.integrationTest.output
+    //runtime classpath to use
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+check.dependsOn integrationTest
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+integrationTest {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
 
 dependencies {
     //implementation('org.springframework.boot:spring-boot-starter')
     
-    implementation('org.springframework.boot:spring-boot-starter-web')
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
-    implementation("com.h2database:h2")
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile("com.h2database:h2")
     compileOnly 'org.projectlombok:lombok'
-    
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
+
+    integrationTestCompile sourceSets.main.output
+    integrationTestCompile configurations.testCompile
+    integrationTestCompile sourceSets.test.output
+    integrationTestRuntime configurations.testRuntime
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile group: 'org.unitils', name: 'unitils-core', version: '3.3'
 }

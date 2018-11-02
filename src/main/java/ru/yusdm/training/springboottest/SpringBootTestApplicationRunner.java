@@ -2,6 +2,7 @@ package ru.yusdm.training.springboottest;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import ru.yusdm.training.springboottest.child.domain.Child;
 import ru.yusdm.training.springboottest.passport.domain.Passport;
@@ -13,6 +14,7 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 
 @Component
+@Profile(value = "test_jpa_correctness")
 public class SpringBootTestApplicationRunner implements ApplicationRunner {
 
     private final UserService userService;

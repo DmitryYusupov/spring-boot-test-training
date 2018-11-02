@@ -2,19 +2,19 @@ package ru.yusdm.training.springboottest.user.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import ru.yusdm.training.springboottest.BaseTest;
-import ru.yusdm.training.springboottest.child.domain.Child;
+import ru.yusdm.training.springboottest.BaseUnitTest;
 import ru.yusdm.training.springboottest.child.domain.ChildFromDtoToDomainConverter;
 import ru.yusdm.training.springboottest.child.dto.ChildDto;
 import ru.yusdm.training.springboottest.child.dto.ChildFromDomainToDtoConverter;
-import ru.yusdm.training.springboottest.passport.domain.Passport;
 import ru.yusdm.training.springboottest.passport.domain.PassportFromDtoToDomainConverter;
 import ru.yusdm.training.springboottest.passport.dto.PassportDto;
 import ru.yusdm.training.springboottest.passport.dto.PassportFromDomainToDtoConverter;
@@ -41,9 +41,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.yusdm.training.springboottest.user.controllers.UserRestController.PATH;
 import static ru.yusdm.training.springboottest.user.exceptions.Exceptions.ERROR_500_WHILE_DELETE;
+import static ru.yusdm.training.springboottest.user.service.impl.common.UserDomainTestCommonHelper.appendChildrenToUser;
+import static ru.yusdm.training.springboottest.user.service.impl.common.UserDomainTestCommonHelper.appendChildrenToUserSettingId;
+import static ru.yusdm.training.springboottest.user.service.impl.common.UserDomainTestCommonHelper.createUserWithoutChildren;
 
+@RunWith(SpringRunner.class)
 @WebMvcTest
-public class UserRestControllerTestWithMockito extends BaseTest {
+public class UserRestControllerTestWithMockito extends BaseUnitTest {
 
     @MockBean
     private UserService userService;
@@ -62,61 +66,27 @@ public class UserRestControllerTestWithMockito extends BaseTest {
 
     @Test
     public void findAll() throws Exception {
+        Long userId = 1L;
+        User user1 = createUserWithoutChildren(userId++);
+        appendChildrenToUserSettingId(user1, 2, 1);
 
-        User user1 = createDomainUserWithPassport(1L);
-        appendChildrenToDomainUser(user1, 2);
-
-        User user2 = createDomainUserWithPassport(2L);
-        appendChildrenToDomainUser(user2, 3);
+        User user2 = createUserWithoutChildren(userId);
+        appendChildrenToUserSettingId(user2, 3, 10);
         List<User> users = Arrays.asList(user1, user2);
 
-        String expected = "[\n" +
-                "  {\n" +
-                "    \"id\": 1,\n" +
-                "    \"name\": \"userName\",\n" +
-                "    \"passportDto\": {\n" +
-                "      \"id\": 1,\n" +
-                "      \"serialNumber\": \"serailNumber\"\n" +
-                "    },\n" +
-                "    \"children\": [\n" +
-                "      {\n" +
-                "        \"id\": 1,\n" +
-                "        \"userId\": 1,\n" +
-                "        \"name\": \"Child_1\"\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"id\": 2,\n" +
-                "        \"userId\": 1,\n" +
-                "        \"name\": \"Child_2\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"id\": 2,\n" +
-                "    \"name\": \"userName\",\n" +
-                "    \"passportDto\": {\n" +
-                "      \"id\": 2,\n" +
-                "      \"serialNumber\": \"serailNumber\"\n" +
-                "    },\n" +
-                "    \"children\": [\n" +
-                "      {\n" +
-                "        \"id\": 1,\n" +
-                "        \"userId\": 2,\n" +
-                "        \"name\": \"Child_1\"\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"id\": 2,\n" +
-                "        \"userId\": 2,\n" +
-                "        \"name\": \"Child_2\"\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"id\": 3,\n" +
-                "        \"userId\": 2,\n" +
-                "        \"name\": \"Child_3\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]";
+        String expected = "[{\"id\":1,\"name\":\"UserName\"," +
+                "\"passportDto\":{\"id\":null,\"serialNumber\":\"passportSerial\"}," +
+
+                "\"children\":" +
+                "[{\"id\":1,\"userId\":1,\"name\":\"Child_1\"}," +
+                "{\"id\":2,\"userId\":1,\"name\":\"Child_2\"}]}," +
+                "" +
+                "{\"id\":2,\"name\":\"UserName\"," +
+                "\"passportDto\":{\"id\":null,\"serialNumber\":\"passportSerial\"}," +
+                "\"children\":" +
+                "[{\"id\":10,\"userId\":2,\"name\":\"Child_1\"}," +
+                "{\"id\":11,\"userId\":2,\"name\":\"Child_2\"}," +
+                "{\"id\":12,\"userId\":2,\"name\":\"Child_3\"}]}]";
 
         when(userService.findAll()).thenReturn(users);
         when(userFromDomainToDtoConverter.convert(user1)).thenReturn(getUserFromDomainToDtoConverter().convert(user1));
@@ -128,7 +98,7 @@ public class UserRestControllerTestWithMockito extends BaseTest {
         verify(userService, times(1)).findAll();
     }
 
-    private UserFromDomainToDtoConverter getUserFromDomainToDtoConverter(){
+    private UserFromDomainToDtoConverter getUserFromDomainToDtoConverter() {
         return new UserFromDomainToDtoConverter(new ChildFromDomainToDtoConverter(), new PassportFromDomainToDtoConverter());
     }
 
@@ -145,14 +115,16 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     @Test
     public void findByIdWithChildren() throws Exception {
         long id = 1L;
-        User user = createDomainUserWithPassport(id);
-        appendChildrenToDomainUser(user, 2);
+        User user = createUserWithoutChildren(id);
+        appendChildrenToUserSettingId(user, 2, 1);
 
         when(userService.findById(id)).thenReturn(Optional.of(user));
         String expected =
-                "{\"id\":1,\"name\":\"userName\"," +
-                        "\"passport\":{\"id\":1,\"serialNumber\":\"serailNumber\"}," +
-                        "\"children\":[{\"id\":1,\"name\":\"Child_1\"},{\"id\":2,\"name\":\"Child_2\"}]}";
+                "{\"id\":1,\"name\":\"UserName\"," +
+                        "\"passport\":{\"id\":null,\"serialNumber\":\"passportSerial\"}," +
+                        "\"children\":" +
+                        "[{\"id\":1,\"name\":\"Child_1\"}," +
+                        "{\"id\":2,\"name\":\"Child_2\"}]}";
 
         this.mockMvc.perform(get(PATH + "/" + id))
                 .andDo(print())
@@ -166,10 +138,12 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     public void findByIdWithoutChildren() throws Exception {
         long id = 1L;
 
-        when(userService.findById(id)).thenReturn(Optional.of(createDomainUserWithPassport(1L)));
+        User user = createUserWithoutChildren(id);
+        user.getPassport().setId(1L);
+        when(userService.findById(id)).thenReturn(Optional.of(user));
         String expected =
-                "{\"id\":1,\"name\":\"userName\","
-                        + "\"passport\":{\"id\":1,\"serialNumber\":\"serailNumber\"}," +
+                "{\"id\":1,\"name\":\"UserName\","
+                        + "\"passport\":{\"id\":1,\"serialNumber\":\"passportSerial\"}," +
                         "\"children\":null}";
         this.mockMvc.perform(get(PATH + "/" + id))
                 .andExpect(status().isOk())
@@ -178,30 +152,6 @@ public class UserRestControllerTestWithMockito extends BaseTest {
         verify(userService, times(1)).findById(id);
     }
 
-    private User createDomainUserWithPassport(Long userId) {
-        User user = new User();
-        user.setId(userId);
-        user.setName("userName");
-
-        Passport passport = new Passport();
-        passport.setUser(user);
-        passport.setId(user.getId());
-        passport.setSerialNumber("serailNumber");
-
-        user.setPassport(passport);
-        return user;
-    }
-
-    private void appendChildrenToDomainUser(User user, int childrenNumber) {
-        List<Child> children = LongStream.rangeClosed(1, childrenNumber).mapToObj(i -> {
-            Child child = new Child();
-            child.setName("Child_" + i);
-            child.setUser(user);
-            child.setId(i);
-            return child;
-        }).collect(toList());
-        user.setChildren(children);
-    }
 
     @Test
     public void saveWithChildren() throws Exception {
@@ -224,18 +174,18 @@ public class UserRestControllerTestWithMockito extends BaseTest {
 
         String expected =
                 "{" +
-                "\"id\":null,\"name\":\"userName\"," +
+                        "\"id\":null,\"name\":\"userName\"," +
 
-                "\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"}," +
+                        "\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"}," +
 
-                "\"children\":" +
-                "[" +
-                "{\"id\":null,\"userId\":null,\"name\":\"ChildName_1\"}," +
-                "{\"id\":null,\"userId\":null,\"name\":\"ChildName_2\"}," +
-                "{\"id\":null,\"userId\":null,\"name\":\"ChildName_3\"}" +
-                "]" +
+                        "\"children\":" +
+                        "[" +
+                        "{\"id\":null,\"userId\":null,\"name\":\"ChildName_1\"}," +
+                        "{\"id\":null,\"userId\":null,\"name\":\"ChildName_2\"}," +
+                        "{\"id\":null,\"userId\":null,\"name\":\"ChildName_3\"}" +
+                        "]" +
 
-                "}";
+                        "}";
         this.mockMvc.perform(post(PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dtoStr))
@@ -247,7 +197,7 @@ public class UserRestControllerTestWithMockito extends BaseTest {
     @Test
     public void saveWithoutChildren() throws Exception {
         UserDto userDto = createUserDtoWithPassport(null);
-      //  String dtoStr = "{\"id\":null,\"name\":\"userName\",\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"},\"children\":null}";
+        //  String dtoStr = "{\"id\":null,\"name\":\"userName\",\"passportDto\":{\"id\":null,\"serialNumber\":\"serialNumber\"},\"children\":null}";
         ObjectMapper mapper = new ObjectMapper();
         String dtoStr = mapper.writeValueAsString(userDto);
 

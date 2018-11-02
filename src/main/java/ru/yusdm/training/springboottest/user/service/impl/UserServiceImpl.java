@@ -14,6 +14,7 @@ import ru.yusdm.training.springboottest.user.service.UserService;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -52,6 +53,11 @@ public class UserServiceImpl implements UserService {
         } else {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<User> saveUpdate(List<User> users) {
+        return users.stream().map(this::saveUpdate).collect(Collectors.toList());
     }
 
     @Override

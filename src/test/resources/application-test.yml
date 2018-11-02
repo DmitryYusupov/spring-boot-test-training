@@ -3,7 +3,7 @@ logging:
     org.springframework.web: DEBUG
 
 connection:
-  url: oraConnectionTest
+  url: oraConnectionUnitTest
 
 auth:
-  validToken: validTokenTest
+  validToken: validTokenUnitTest
